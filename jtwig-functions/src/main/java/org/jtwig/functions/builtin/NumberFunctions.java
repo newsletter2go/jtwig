@@ -26,7 +26,9 @@ import java.util.List;
 public class NumberFunctions {
     @JtwigFunction(name = "number_format")
     public String numberFormat (@Parameter Object number, @Parameter Integer fractionDigits, @Parameter String decimalSeparator, @Parameter String groupingSeparator) {
-        DecimalFormat numberFormat = new DecimalFormat();
+        if(number == null) return "";
+    	
+    	DecimalFormat numberFormat = new DecimalFormat();
         DecimalFormatSymbols decimalFormatSymbols = numberFormat.getDecimalFormatSymbols();
 
         if (fractionDigits != null) {
