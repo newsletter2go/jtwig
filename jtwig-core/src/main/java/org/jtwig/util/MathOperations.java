@@ -62,4 +62,12 @@ public class MathOperations {
 
         return true;
     }
+    
+    public static boolean areInteger(Object... list) {
+        for (Object obj : list)
+            if (!(obj instanceof Integer))
+                return false;
+
+        return true;
+    }
 }
