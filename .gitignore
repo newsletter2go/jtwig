@@ -18,3 +18,4 @@ release.properties
 # IDE files (IntelliJ)
 .idea/
 *.iml
+/bin/
