@@ -28,11 +28,11 @@ import org.jtwig.functions.parameters.resolve.api.InputParameterResolverFactory;
 import org.jtwig.functions.parameters.resolve.api.ParameterResolver;
 import org.jtwig.functions.parameters.resolve.impl.InputDelegateMethodParametersResolver;
 import org.jtwig.functions.parameters.resolve.impl.ParameterAnnotationParameterResolver;
+import org.jtwig.functions.repository.model.Function;
 import org.jtwig.functions.resolver.api.FunctionResolver;
 import org.jtwig.functions.resolver.impl.CompoundFunctionResolver;
 import org.jtwig.functions.resolver.impl.DelegateFunctionResolver;
 import org.jtwig.functions.resolver.model.Executable;
-import org.jtwig.render.config.RenderConfiguration;
 import org.jtwig.render.stream.RenderStream;
 
 import java.io.IOException;
@@ -42,40 +42,56 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
+import org.jtwig.Environment;
+import org.jtwig.cache.TemplateCache;
+import org.jtwig.content.model.Template;
 
 import static org.jtwig.types.Undefined.UNDEFINED;
 
 public class RenderContext {
     private static final String MODEL = "model";
 
-    /**
-     * NOTE: This method should only be used once (in JtwigTemplate)
-     */
-    public static RenderContext create(RenderConfiguration configuration, JtwigModelMap modelMap, OutputStream output) {
-        return new RenderContext(configuration, modelMap, new CompoundFunctionResolver()
-                .withResolver(new DelegateFunctionResolver(configuration.functionRepository(),
+    public static RenderContext create(Environment env, JtwigModelMap modelMap, OutputStream output) {
+        return new RenderContext(env, modelMap, new CompoundFunctionResolver()
+                .withResolver(new DelegateFunctionResolver(env.getConfiguration().getFunctionRepository(),
                         new InputDelegateMethodParametersResolver(annotationWithoutConversion())))
-                .withResolver(new DelegateFunctionResolver(configuration.functionRepository(),
-                        new InputDelegateMethodParametersResolver(annotationWithConversion()))), new RenderStream(output, configuration.renderThreadingConfig()));
+                .withResolver(new DelegateFunctionResolver(env.getConfiguration().getFunctionRepository(),
+                        new InputDelegateMethodParametersResolver(annotationWithConversion()))), new RenderStream(output, env));
     }
 
-    public static RenderContext create(RenderConfiguration configuration, JtwigModelMap modelMap, FunctionResolver functionResolver, OutputStream output) {
-        return new RenderContext(configuration, modelMap, functionResolver, new RenderStream(output, configuration.renderThreadingConfig()));
+    public static RenderContext create(Environment env, JtwigModelMap modelMap, FunctionResolver functionResolver, OutputStream output) {
+        return new RenderContext(env, modelMap, functionResolver, new RenderStream(output, env));
     }
 
     private final FunctionResolver functionResolver;
 
-    private final RenderConfiguration configuration;
+    private final Environment env;
 
     private final JtwigModelMap modelMap;
 
     private final RenderStream renderStream;
+    
+    private Stack<Template.CompiledTemplate> renderingTemplateStack = new Stack<>();
 
-    private RenderContext(RenderConfiguration configuration, JtwigModelMap modelMap, FunctionResolver functionResolver, RenderStream renderStream) {
-        this.configuration = configuration;
+    private RenderContext(
+            Environment env,
+            JtwigModelMap modelMap,
+            FunctionResolver functionResolver,
+            RenderStream renderStream) {
+        this.env = env;
         this.modelMap = modelMap;
         this.renderStream = renderStream;
         this.functionResolver = functionResolver;
+    }
+    private RenderContext(
+            Environment env,
+            JtwigModelMap modelMap,
+            FunctionResolver functionResolver,
+            RenderStream renderStream,
+            Stack<Template.CompiledTemplate> renderingTemplateStack) {
+        this(env, modelMap, functionResolver, renderStream);
+        this.renderingTemplateStack = renderingTemplateStack;
     }
 
     public void write(byte[] bytes) throws IOException {
@@ -87,11 +103,31 @@ public class RenderContext {
     }
 
     public RenderContext newRenderContext(OutputStream outputStream) {
-        return new RenderContext(configuration, modelMap, functionResolver, new RenderStream(outputStream, configuration.renderThreadingConfig()));
+        return new RenderContext(env, modelMap, functionResolver,
+                new RenderStream(outputStream, env),
+                renderingTemplateStack);
     }
 
-    public RenderConfiguration configuration() {
-        return configuration;
+    public Environment environment() {
+        return env;
+    }
+    
+    public TemplateCache cache() {
+        return env.getConfiguration().getTemplateCache();
+    }
+    
+    public Template.CompiledTemplate getRenderingTemplate() {
+        return renderingTemplateStack.peek();
+    }
+    
+    public RenderContext pushRenderingTemplate(Template.CompiledTemplate renderingTemplate) {
+        this.renderingTemplateStack.push(renderingTemplate);
+        return this;
+    }
+    
+    public RenderContext popRenderingTemplate() {
+        this.renderingTemplateStack.pop();
+        return this;
     }
 
     public void renderConcurrent(Renderable content) throws IOException, RenderException {
@@ -99,11 +135,13 @@ public class RenderContext {
     }
 
     private RenderContext fork() throws IOException {
-        return new RenderContext(configuration, modelMap, functionResolver, renderStream.fork());
+        return new RenderContext(env, modelMap, functionResolver,
+                renderStream.fork(), renderingTemplateStack);
     }
 
     public RenderContext isolatedModel() {
-        return new RenderContext(configuration, modelMap.clone(), functionResolver, renderStream);
+        return new RenderContext(env, modelMap.clone(),
+                functionResolver, renderStream, renderingTemplateStack);
     }
 
     public RenderContext with(Map calculate) {
@@ -149,7 +187,9 @@ public class RenderContext {
 
             throw new FunctionNotFoundException(message);
 
-        } catch (InvocationTargetException | IllegalAccessException e) {
+        } catch (InvocationTargetException e) {
+            throw new FunctionException(e.getTargetException());
+        } catch (IllegalAccessException e) {
             throw new FunctionException(e);
         }
     }

@@ -14,148 +14,296 @@
 
 package org.jtwig.acceptance;
 
-import org.jtwig.JtwigModelMap;
-import org.jtwig.JtwigTemplate;
-import org.jtwig.configuration.JtwigConfiguration;
-import org.jtwig.exception.CompileException;
-import org.jtwig.exception.ParseException;
-import org.jtwig.exception.RenderException;
-import org.junit.Test;
-
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BinaryBooleanOperatorTest extends AbstractJtwigTest {
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
+import org.jtwig.exception.ParseException;
+import org.junit.Test;
+
+public class BinaryBooleanOperatorTest {
 
     @Test(expected = ParseException.class)
-    public void AndBadSyntax () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (items && true) %}Hi{% endif %}", new JtwigConfiguration());
-        JtwigModelMap modelMap = new JtwigModelMap();
-        template.output(modelMap);
+    public void AndBadSyntax () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        JtwigTemplate
+            .inlineTemplate("{% if (items && true) %}Hi{% endif %}")
+            .render(model);
     }
 
     @Test
-    public void AndGoodSyntax () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (items and true) %}Hi{% endif %}", new JtwigConfiguration());
-        JtwigModelMap modelMap = new JtwigModelMap();
-        ArrayList<String> value = new ArrayList<String>();
-        value.add("a");
-        modelMap.add("items", value);
-        assertThat(template.output(modelMap), is("Hi"));
+    public void AndGoodSyntax () throws Exception {
+        JtwigModelMap model = new JtwigModelMap()
+            .withModelAttribute("items", Arrays.asList("a"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if (items and true) %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is("Hi"));
     }
 
     @Test(expected = ParseException.class)
-    public void OrBadSyntax () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (items || true) %}Hi{% endif %}", new JtwigConfiguration());
-        JtwigModelMap modelMap = new JtwigModelMap();
-        template.output(modelMap);
+    public void OrBadSyntax () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        JtwigTemplate
+            .inlineTemplate("{% if (items || true) %}Hi{% endif %}")
+            .render(model);
     }
 
     @Test
-    public void OrGoodSyntax () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (false or items) %}Hi{% endif %}", new JtwigConfiguration());
-        JtwigModelMap modelMap = new JtwigModelMap();
-        ArrayList<String> value = new ArrayList<String>();
-        value.add("a");
-        modelMap.add("items", value);
-        assertThat(template.output(modelMap), is("Hi"));
+    public void OrGoodSyntax () throws Exception {
+        JtwigModelMap model = new JtwigModelMap().withModelAttribute("items", Arrays.asList("a"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if (false or items) %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is("Hi"));
     }
 
     @Test
-    public void StartsWith () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('Hello' starts with 'H') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("Hi"));
+    public void StartsWith () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('Hello' starts with 'H') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is("Hi"));
     }
 
     @Test
-    public void StartsWithFail () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('Hello' starts with 'e') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is(""));
+    public void StartsWithFail () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('Hello' starts with 'e') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is(""));
     }
 
     @Test
-    public void EndsWith () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('Hello' ends with 'llo') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("Hi"));
+    public void EndsWith () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('Hello' ends with 'llo') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is("Hi"));
     }
 
     @Test
-    public void EndsWithFail () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('Hello' ends with 'a') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is(""));
+    public void EndsWithFail () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('Hello' ends with 'a') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is(""));
     }
 
     @Test
-    public void Matches () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('Hello' matches 'H.*') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("Hi"));
+    public void Matches () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('Hello' matches 'H.*') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is("Hi"));
     }
 
     @Test
-    public void MatchesFail () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('Hello' matches '^A.*') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is(""));
+    public void MatchesFail () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('Hello' matches '^A.*') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is(""));
     }
 
     @Test
-    public void MatchesFail_withNull () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (null matches '^A.*') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is(""));
+    public void MatchesFail_withNull () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if (null matches '^A.*') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is(""));
     }
 
     @Test
-    public void Contains () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('a' in 'abc') %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("Hi"));
+    public void Contains () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('a' in 'abc') %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is("Hi"));
     }
 
     @Test
-    public void ContainsFail () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if ('a' in ['b','c']) %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is(""));
+    public void ContainsFail () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if ('a' in ['b','c']) %}Hi{% endif %}")
+            .render(model);
+
+        assertThat(result, is(""));
     }
 
     @Test
-    public void lessOrEqualTo () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (2 <= 2) %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("Hi"));
+    public void lessOrEqualTo () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        assertThat(JtwigTemplate
+            .inlineTemplate("{% if (\"test1\" <= \"test2\") %}Hi{% endif %}")
+            .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (2 <= 2) %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+            .inlineTemplate("{% if (\"test2\" <= \"test1\") %}Hi{% endif %}")
+            .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test1\" <= \"test1\") %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+            .inlineTemplate("{% if (date('2014-12-12') <= date('2015-01-01')) %}Hi{% endif %}")
+            .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2015-01-01') <= date('2014-12-12')) %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+            .inlineTemplate("{% if (date('2015-01-01') <= date('2015-01-01')) %}Hi{% endif %}")
+            .render(model), is("Hi"));
     }
 
     @Test
-    public void lessThan () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (2 < 2) %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is(""));
+    public void lessThan () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (2 < 2) %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test1\" < \"test2\") %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test2\" < \"test1\") %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test1\" < \"test1\") %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2014-12-12') < date('2015-01-01')) %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2015-01-01') < date('2014-12-12')) %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2015-01-01') < date('2015-01-01')) %}Hi{% endif %}")
+                       .render(model), is(""));
     }
 
     @Test
-    public void greaterThan () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (2 > 2) %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is(""));
+    public void greaterThan () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (2 > 2) %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test1\" > \"test2\") %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test2\" > \"test1\") %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test1\" > \"test1\") %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2014-12-12') > date('2015-01-01')) %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2015-01-01') > date('2014-12-12')) %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2015-01-01') > date('2015-01-01')) %}Hi{% endif %}")
+                       .render(model), is(""));
     }
 
     @Test
-    public void greaterOrEqualThan () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{% if (2 >= 2) %}Hi{% endif %}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("Hi"));
+    public void greaterOrEqualThan () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (2 >= 2) %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test1\" >= \"test2\") %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test2\" >= \"test1\") %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (\"test1\" >= \"test1\") %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2014-12-12') >= date('2015-01-01')) %}Hi{% endif %}")
+                       .render(model), is(""));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2015-01-01') >= date('2014-12-12')) %}Hi{% endif %}")
+                       .render(model), is("Hi"));
+        assertThat(JtwigTemplate
+                       .inlineTemplate("{% if (date('2015-01-01') >= date('2015-01-01')) %}Hi{% endif %}")
+                       .render(model), is("Hi"));
     }
 
     @Test
-    public void modOperator () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{{ 4 % 2 }}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("0"));
+    public void modOperator () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ 4 % 2 }}")
+            .render(model);
+
+        assertThat(result, is("0"));
     }
 
     @Test
-    public void endsWithNull () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{{ null ends with 'tree' }}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("0"));
+    public void endsWithNull () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ null ends with 'tree' }}")
+            .render(model);
+
+        assertThat(result, is("0"));
     }
 
     @Test
-    public void startsWithNull () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = new JtwigTemplate("{{ null starts with 'tree' }}", new JtwigConfiguration());
-        assertThat(template.output(new JtwigModelMap()), is("0"));
+    public void startsWithNull () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ null starts with 'tree' }}")
+            .render(model);
+
+        assertThat(result, is("0"));
     }
 }

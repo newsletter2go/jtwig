@@ -14,37 +14,60 @@
 
 package org.jtwig.acceptance.functions;
 
-import org.jtwig.acceptance.AbstractJtwigTest;
+import org.joda.time.LocalDate;
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.jtwig.exception.RenderException;
 import org.junit.Test;
 
-import java.util.Date;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 
-import static org.jtwig.util.SyntacticSugar.given;
-import static org.jtwig.util.SyntacticSugar.when;
-
-public class DateFunctionsTest extends AbstractJtwigTest {
+public class DateFunctionsTest {
     @Test
     public void dateFormatWithDate() throws Exception {
-        given(aModel().withModelAttribute("time", new Date()));
-        when(jtwigRenders(template("{{ date(time, 'yyyy') }}")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("time", LocalDate.parse("2014-01-01").toDate());
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ date(time, 'yyyy') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("2014")));
     }
 
     @Test
     public void dateFormat() throws Exception {
-        given(aModel().withModelAttribute("time", new Date()));
-        when(jtwigRenders(template("{{ date(time) }}")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("time", LocalDate.parse("2014-01-01").toDate());
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ date(time) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("2014-01-01T00:00:00")));
     }
 
     @Test
     public void dateModify() throws Exception {
-        given(aModel().withModelAttribute("time", new Date()));
-        when(jtwigRenders(template("{{ date(time, '+1 day') }}")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("time", LocalDate.parse("2014-01-01").toDate());
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ date_modify(time, '+1 day') | date('yyyy-MM-dd') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("2014-01-02")));
     }
 
     @Test(expected = RenderException.class)
     public void dateModifyWithWrongFormat() throws Exception {
-        given(aModel().withModelAttribute("time", new Date()));
-        when(jtwigRenders(template("{{ date(time, '+1 unknown') }}")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("time", LocalDate.parse("2014-01-01").toDate());
+
+        JtwigTemplate
+            .inlineTemplate("{{ date_modify(time, '+1 unknown') }}")
+            .render(model);
     }
 }

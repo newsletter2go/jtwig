@@ -14,114 +14,200 @@
 
 package org.jtwig.acceptance.functions;
 
-import org.jtwig.acceptance.AbstractJtwigTest;
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.jtwig.util.SyntacticSugar.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-public class StringFunctionsTest extends AbstractJtwigTest {
+public class StringFunctionsTest {
     @Test
     public void capitalize() throws Exception {
-        when(jtwigRenders(template("{{ capitalize('joao') }}")));
-        then(theRenderedTemplate(), is(equalTo("Joao")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ capitalize('joao') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Joao")));
     }
 
     @Test
     public void convertEncoding() throws Exception {
-        when(jtwigRenders(template("{{ convert_encoding('joao', 'UTF-8', 'ASCII') }}")));
-        then(theRenderedTemplate(), is(equalTo("joao")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ convert_encoding('joao', 'UTF-8', 'ASCII') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("joao")));
     }
 
     @Test
     public void escape() throws Exception {
-        when(jtwigRenders(template("{{ escape('joão') }}")));
-        then(theRenderedTemplate(), is(equalTo("jo&atilde;o")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ escape('joão') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("jo&atilde;o")));
     }
 
     @Test
     public void escapeJavascript() throws Exception {
-        when(jtwigRenders(template("{{ escape('\"', 'js') }}")));
-        then(theRenderedTemplate(), is(equalTo("\\\"")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ escape('\"', 'js') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("\\\"")));
     }
 
     @Test
     public void formatFunctionTest() throws Exception {
-        when(jtwigRenders(template("{{ format('Hello %s', 'Joao') }}")));
-        then(theRenderedTemplate(), is(equalTo("Hello Joao")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ format('Hello %s', 'Joao') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Hello Joao")));
     }
 
     @Test
     public void formatFunctionDoubleTest() throws Exception {
-        when(jtwigRenders(template("{{ format('Hello %s %s', 'Joao', 'One') }}")));
-        then(theRenderedTemplate(), is(equalTo("Hello Joao One")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ format('Hello %s %s', 'Joao', 'One') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Hello Joao One")));
     }
 
     @Test
     public void lowerFunctionTest() throws Exception {
-        when(jtwigRenders(template("{{ lower('Hi') }}")));
-        then(theRenderedTemplate(), is(equalTo("hi")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ lower('Hi') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("hi")));
     }
 
     @Test
     public void upperFunctionTest() throws Exception {
-        when(jtwigRenders(template("{{ upper('Hi') }}")));
-        then(theRenderedTemplate(), is(equalTo("HI")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ upper('Hi') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("HI")));
     }
 
     @Test
     public void nl2brTest() throws Exception {
-        given(aModel().withModelAttribute("var", "Hi\n\n"));
-        when(jtwigRenders(template("{{ nl2br(var) }}")));
-        then(theRenderedTemplate(), is(equalTo("Hi<br /><br />")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("var", "Hi\n\n");
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ nl2br(var) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Hi<br /><br />")));
     }
 
     @Test
     public void replaceTest() throws Exception {
-        when(jtwigRenders(template("{{ replace('Hi var', { var: 'Joao' }) }}")));
-        then(theRenderedTemplate(), is(equalTo("Hi Joao")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ replace('Hi var', { var: 'Joao' }) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Hi Joao")));
     }
 
     @Test
     public void splitTest() throws Exception {
-        when(jtwigRenders(template("{{ split('one, two, three', ',').get(0) }}")));
-        then(theRenderedTemplate(), is(equalTo("one")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ split('one, two, three', ',').get(0) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("one")));
     }
 
     @Test
     public void stripTagsTest() throws Exception {
-        when(jtwigRenders(template("{{ striptags('<p>Hi Joao</p>') }}")));
-        then(theRenderedTemplate(), is(equalTo("Hi Joao")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ striptags('<p>Hi Joao</p>') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Hi Joao")));
     }
 
     @Test
     public void stripTagsWithAllowedTest() throws Exception {
-        when(jtwigRenders(template("{{ striptags('<a><p>Hi Joao</p></a>', 'p') }}")));
-        then(theRenderedTemplate(), is(equalTo("<p>Hi Joao</p>")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ striptags('<a><p>Hi Joao</p></a>', 'p') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("<p>Hi Joao</p>")));
     }
 
     @Test
     public void titleTest() throws Exception {
-        when(jtwigRenders(template("{{ title('hi joao') }}")));
-        then(theRenderedTemplate(), is(equalTo("Hi Joao")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ title('hi joao') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Hi Joao")));
     }
 
     @Test
     public void trimTest() throws Exception {
-        when(jtwigRenders(template("{{ trim(' joao ') }}")));
-        then(theRenderedTemplate(), is(equalTo("joao")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ trim(' joao ') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("joao")));
     }
 
     @Test
     public void urlEncodeTest() throws Exception {
-        when(jtwigRenders(template("{{ url_encode('ã') }}")));
-        then(theRenderedTemplate(), is(equalTo("%C3%A3")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ url_encode('ã') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("%C3%A3")));
     }
 
     @Test
     public void urlEncodeMapTest() throws Exception {
-        when(jtwigRenders(template("{{ url_encode({ one: 1, two: 2 }) }}")));
-        then(theRenderedTemplate(), is(equalTo("one=1&two=2")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ url_encode({ one: 1, two: 2 }) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("one=1&two=2")));
     }
 }

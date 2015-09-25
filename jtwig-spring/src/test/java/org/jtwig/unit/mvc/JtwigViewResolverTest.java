@@ -1,12 +1,16 @@
 package org.jtwig.unit.mvc;
 
+import java.io.ByteArrayInputStream;
 import org.jtwig.cache.JtwigTemplateCacheSystem;
-import org.jtwig.configuration.JtwigConfiguration;
+import org.jtwig.configuration.JtwigConfigurationBuilder;
 import org.jtwig.content.api.Renderable;
 import org.jtwig.mvc.JtwigView;
 import org.jtwig.mvc.JtwigViewResolver;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.jtwig.configuration.JtwigConfigurationBuilder.newConfiguration;
+import static org.junit.Assert.*;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -24,11 +28,14 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import org.jtwig.Environment;
+import org.jtwig.cache.TemplateCache;
+import org.jtwig.loader.Loader;
+import org.jtwig.loader.impl.StringLoader;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class JtwigViewResolverTest {
     private HttpServletRequest request;
@@ -37,41 +44,23 @@ public class JtwigViewResolverTest {
     private ServletContext servletContext;
     private GenericWebApplicationContext applicationContext;
     private JtwigViewResolver underTest;
+    private TemplateCache cache;
+    private Environment env;
 
 
     @Before
     public void setUp() throws Exception {
+        env = spy(new Environment());
+        cache = mock(TemplateCache.class);
+        when(env.getConfiguration()).thenReturn(newConfiguration().withTemplateCache(cache).build());
+        
         underTest = new JtwigViewResolver();
+        underTest.setEnvironment(env);
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
         model = new ModelMap();
     }
 
-    @Test
-    public void renders() throws Exception {
-        JtwigTemplateCacheSystem cacheSystem = mock(JtwigTemplateCacheSystem.class);
-        Mockito.when(cacheSystem.get(anyString(), Matchers.any(Callable.class))).thenReturn(mock(Renderable.class));
-
-
-        servletContext = new MockServletContext();
-        applicationContext = new GenericWebApplicationContext(servletContext);
-        applicationContext.getBeanFactory().registerSingleton("viewResolver", underTest);
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
-
-        underTest.setApplicationContext(applicationContext);
-        underTest.setServletContext(servletContext);
-        underTest.setCacheSystem(cacheSystem);
-
-        AbstractUrlBasedView one = (AbstractUrlBasedView) underTest.resolveViewName("one", Locale.ENGLISH);
-        assertThat(one, instanceOf(JtwigView.class));
-
-        one.setApplicationContext(applicationContext);
-        one.setServletContext(servletContext);
-        one.afterPropertiesSet();
-
-        one.render(model, request, response);
-        verify(cacheSystem).get(eq("one"), Matchers.any(Callable.class));
-    }
 
     @Test
     public void includeFunctionDelegatesToRenderConfiguration() throws Exception {
@@ -80,11 +69,11 @@ public class JtwigViewResolverTest {
         applicationContext.getBeanFactory().registerSingleton("viewResolver", underTest);
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
 
-        JtwigConfiguration configuration = mock(JtwigConfiguration.class, Mockito.RETURNS_DEEP_STUBS);
-        underTest.setConfiguration(configuration);
+        Environment env = mock(Environment.class, Mockito.RETURNS_DEEP_STUBS);
+        underTest.setEnvironment(env);
 
         underTest.includeFunctions(this);
 
-        verify(configuration.render().functionRepository()).include(this);
+        verify(env.getConfiguration().getFunctionRepository()).include(this);
     }
 }

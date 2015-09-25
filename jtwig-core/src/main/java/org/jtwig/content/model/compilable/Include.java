@@ -20,22 +20,24 @@ import org.jtwig.content.api.Renderable;
 import org.jtwig.exception.*;
 import org.jtwig.expressions.api.CompilableExpression;
 import org.jtwig.expressions.api.Expression;
+import org.jtwig.loader.impl.EmptyLoader;
 import org.jtwig.parser.model.JtwigPosition;
 import org.jtwig.render.RenderContext;
-import org.jtwig.resource.JtwigResource;
-
 import java.util.Map;
+import org.jtwig.content.model.Template;
+import org.jtwig.expressions.model.Constant;
+import org.jtwig.loader.Loader;
 
 public class Include extends AbstractElement {
-    private final String relativePath;
+    private final CompilableExpression expr;
     private final JtwigPosition position;
     private CompilableExpression withExpression = null;
     private boolean ignoreMissing = false;
     private boolean isolated = false;
 
-    public Include(JtwigPosition position, String relativePath) {
+    public Include(JtwigPosition position, CompilableExpression expr) {
         this.position = position;
-        this.relativePath = relativePath;
+        this.expr = expr;
     }
 
     public Include with (CompilableExpression with) {
@@ -55,32 +57,42 @@ public class Include extends AbstractElement {
 
     @Override
     public Renderable compile(CompileContext context) throws CompileException {
+        // If we've been given a constant, let's try and grab the template and
+        // make sure it exists
         try {
-            JtwigResource resource = context.retrieve(relativePath);
-            if (!resource.exists() && ignoreMissing) {
-                return new Missing();
+            if (expr instanceof Constant) {
+                String path = position.getResource().resolve(((Constant)expr).getValue().toString());
+                Loader.Resource resource = context.environment().load(path);
+                if (resource == null && !ignoreMissing) {
+                    throw new ResourceException("Resource "+path+" not found");
+                }
             }
-            context = context.clone().withResource(resource);
-
-            Compiled compiled = new Compiled(position, context.parse(resource).compile(context), isolated);
-            if (withExpression != null)
-                compiled.with(withExpression.compile(context));
-            return compiled;
-        } catch (ResourceException | ParseException e) {
-            throw new CompileException(e);
+        } catch (ResourceException ex) {
+            throw new CompileException(ex);
         }
+        
+        Compiled compiled = new Compiled(position, expr.compile(context), isolated, ignoreMissing, context);
+        if (withExpression != null)
+            compiled.with(withExpression.compile(context));
+        return compiled;
     }
 
     public static class Compiled implements Renderable {
-        private final Renderable renderable;
+        private final Expression expr;
         private final JtwigPosition position;
         private final boolean isolated;
+        private final boolean ignoreMissing;
+        private final CompileContext compileContext;
         private Expression withExpression = null;
 
-        public Compiled(JtwigPosition position, Renderable renderable, boolean isolated) {
-            this.renderable = renderable;
+        public Compiled(JtwigPosition position, Expression expr,
+                boolean isolated, boolean ignoreMissing,
+                CompileContext compileContext) {
+            this.expr = expr;
             this.position = position;
             this.isolated = isolated;
+            this.ignoreMissing = ignoreMissing;
+            this.compileContext = compileContext;
         }
 
         public Compiled with (Expression expression) {
@@ -90,23 +102,41 @@ public class Include extends AbstractElement {
 
         @Override
         public void render(RenderContext context) throws RenderException {
-            RenderContext usedContext = context;
-            if (isolated) {
-                usedContext = context.isolatedModel();
-                ((Map)usedContext.map("model")).clear();
-            }
-            
-            if (withExpression != null) {
-                try {
-                    Object calculate = withExpression.calculate(context);
-                    if (calculate instanceof Map) {
-                        renderable.render(usedContext.with((Map) calculate));
-                    } else throw new RenderException(position+": Include 'with' must be given a map.");
-                } catch (CalculateException e) {
-                    throw new RenderException(e);
+            try {
+                // Build the renderable
+                String path = position.getResource().resolve(expr.calculate(context).toString());
+                Loader.Resource resource = context.environment().load(path);
+                boolean isEmptyResource = resource == null || resource instanceof EmptyLoader.NoResource;
+                if (isEmptyResource && ignoreMissing) {
+                    return;
                 }
-            } else
-                renderable.render(usedContext);
+                CompileContext compileCtx = compileContext.clone().withResource(resource);
+                Template.CompiledTemplate compiled = context.environment().compile(resource);
+
+                // Isolate the render context if needed
+                RenderContext usedContext = context;
+                if (isolated) {
+                    usedContext = context.isolatedModel();
+                    ((Map)usedContext.map("model")).clear();
+                }
+
+                if (withExpression != null) {
+                    try {
+                        Object calculate = withExpression.calculate(context);
+                        if (calculate instanceof Map) {
+                            compiled.render(usedContext.with((Map)calculate));
+                        } else {
+                            throw new RenderException(position+": Include 'with' must be given a map.");
+                        }
+                    } catch (CalculateException e) {
+                        throw new RenderException(e);
+                    }
+                } else {
+                    compiled.render(usedContext);
+                }
+            } catch (CalculateException | CompileException | ParseException | ResourceException ex) {
+                throw new RenderException(ex);
+            }
         }
     }
     

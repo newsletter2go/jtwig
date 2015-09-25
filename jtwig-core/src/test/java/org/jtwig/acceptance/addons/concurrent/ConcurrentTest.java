@@ -17,69 +17,83 @@ package org.jtwig.acceptance.addons.concurrent;
 
 import org.jtwig.JtwigModelMap;
 import org.jtwig.JtwigTemplate;
-import org.jtwig.acceptance.addons.AbstractAddonTest;
 import org.junit.Test;
 
-import java.util.ArrayList;
-
 import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ConcurrentTest extends AbstractAddonTest {
-
+public class ConcurrentTest {
     @Test
     public void concurrentWithStaticContent() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{% concurrent %}a{% endconcurrent %}b");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template.output(context), is("ab"));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% concurrent %}a{% endconcurrent %}b")
+            .render(model);
+
+        assertThat(result, is(equalTo("ab")));
     }
 
     @Test
     public void concurrentWithConditionalContent() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{% concurrent %}{% if true %}a{% endif %}{% endconcurrent %}b");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template.output(context), is("ab"));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% concurrent %}{% if true %}a{% endif %}{% endconcurrent %}b")
+            .render(model);
+
+        assertThat(result, is(equalTo("ab")));
     }
 
     @Test
     public void doubleConcurrentWithStaticContent() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{% concurrent %}a{% endconcurrent %}"
-                +"{% concurrent %}b{% endconcurrent %}"
-                +"c");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template.output(context), is("abc"));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% concurrent %}a{% endconcurrent %}"
+                            +"{% concurrent %}b{% endconcurrent %}"
+                            +"c")
+            .render(model);
+
+        assertThat(result, is(equalTo("abc")));
     }
 
     @Test
     public void concurrentWithDynamicContent() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{% concurrent %}{% for item in list %}{{ item }}{% endfor %}{% endconcurrent %}");
-        JtwigModelMap context = new JtwigModelMap()
-                .withModelAttribute("list", asList("a", "b", "c", "d"));
-        assertThat(template.output(context), is("abcd"));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("list", asList("a", "b", "c", "d"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% concurrent %}{% for item in list %}{{ item }}{% endfor %}{% endconcurrent %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("abcd")));
     }
 
     @Test
     public void test_concurrent_1() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{% concurrent %}{% for item in list %}" +
-                                                           "{% if loop.first %}{% concurrent %}First {% endconcurrent %}{% elseif loop.last %}{% concurrent %}Last{% endconcurrent %}{% else %}I: {{ loop.index0 }} R: {{ loop.revindex0 }} {% endif %}" +
-                                                           "{% endfor %}{% endconcurrent %}");
-        JtwigModelMap context = new JtwigModelMap();
-        ArrayList<String> value = new ArrayList<String>();
-        value.add("a");
-        value.add("b");
-        value.add("c");
-        value.add("d");
-        value.add("e");
-        context.withModelAttribute("list", value);
-        assertThat(template.output(context), is("First I: 1 R: 3 I: 2 R: 2 I: 3 R: 1 Last"));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("list", asList("a", "b", "c", "d", "e"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% concurrent %}{% for item in list %}" +
+                            "{% if loop.first %}{% concurrent %}First {% endconcurrent %}{% elseif loop.last %}{% concurrent %}Last{% endconcurrent %}{% else %}I: {{ loop.index0 }} R: {{ loop.revindex0 }} {% endif %}" +
+                            "{% endfor %}{% endconcurrent %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("First I: 1 R: 3 I: 2 R: 2 I: 3 R: 1 Last")));
     }
 
     @Test
     public void test_concurrent_2() throws Exception {
-        JtwigTemplate template2 = JtwigTemplate.fromString(
-                "{% concurrent %}1{% endconcurrent %}{% concurrent %}{% concurrent %}{% concurrent %}2{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% concurrent %}3{% endconcurrent %}{% concurrent %}{% concurrent %}{% concurrent %}{% concurrent %}{% concurrent %}{% concurrent %}4{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}5{% concurrent %}6{% endconcurrent %}{% concurrent %}7{% endconcurrent %}");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template2.output(context), is("1234567"));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% concurrent %}1{% endconcurrent %}{% concurrent %}{% concurrent %}{% concurrent %}2{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% concurrent %}3{% endconcurrent %}{% concurrent %}{% concurrent %}{% concurrent %}{% concurrent %}{% concurrent %}{% concurrent %}4{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}{% endconcurrent %}5{% concurrent %}6{% endconcurrent %}{% concurrent %}7{% endconcurrent %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1234567")));
     }
 }

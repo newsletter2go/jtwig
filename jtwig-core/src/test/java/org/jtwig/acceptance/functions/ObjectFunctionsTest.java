@@ -14,109 +14,190 @@
 
 package org.jtwig.acceptance.functions;
 
-import org.jtwig.acceptance.AbstractJtwigTest;
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.jtwig.util.SyntacticSugar.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.jtwig.util.SyntacticSugar.given;
 
-public class ObjectFunctionsTest extends AbstractJtwigTest {
+public class ObjectFunctionsTest {
 
     @Test
     public void defaultFunctionTest() throws Exception {
-        when(jtwigRenders(template("{{ default(null, 1) }}")));
-        then(theRenderedTemplate(), is(equalTo("1")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ default(null, 1) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 
     @Test
     public void defaultUndefinedVariableTest() throws Exception {
-        when(jtwigRenders(template("{{ default(a, 1) }}")));
-        then(theRenderedTemplate(), is(equalTo("1")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ default(a, 1) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 
     @Test
     public void defaultUndefinedMethodOrFieldTest() throws Exception {
-        given(aModel().withModelAttribute("a", new Object()));
-        when(jtwigRenders(template("{{ default(a.call, 1) }}")));
-        then(theRenderedTemplate(), is(equalTo("1")));
+        JtwigModelMap model = new JtwigModelMap()
+            .withModelAttribute("a", new Object());
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ default(a.call, 1) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 
     @Test
     public void jsonEncode() throws Exception {
-        when(jtwigRenders(template("{{ json_encode({one: 'hello'}) }}")));
-        then(theRenderedTemplate(), is(equalTo("{\"one\":\"hello\"}")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ json_encode({one: 'hello'}) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("{\"one\":\"hello\"}")));
     }
 
     @Test
     public void mapLength() throws Exception {
-        when(jtwigRenders(template("{{ length({one: 'hello'}) }}")));
-        then(theRenderedTemplate(), is(equalTo("1")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ length({one: 'hello'}) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 
     @Test
     public void listLength() throws Exception {
-        when(jtwigRenders(template("{{ length([1,2]) }}")));
-        then(theRenderedTemplate(), is(equalTo("2")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ length([1,2]) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("2")));
     }
 
     @Test
     public void stringLength() throws Exception {
-        when(jtwigRenders(template("{{ length('Hello') }}")));
-        then(theRenderedTemplate(), is(equalTo("5")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ length('Hello') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("5")));
     }
 
     @Test
     public void mapFirst() throws Exception {
-        when(jtwigRenders(template("{{ first({one: 'hello'}) }}")));
-        then(theRenderedTemplate(), is(equalTo("hello")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ first({one: 'hello'}) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("hello")));
     }
 
     @Test
     public void listFirst() throws Exception {
-        when(jtwigRenders(template("{{ first([1,2]) }}")));
-        then(theRenderedTemplate(), is(equalTo("1")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ first([1,2]) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 
     @Test
     public void stringFirst() throws Exception {
-        when(jtwigRenders(template("{{ first('Hello') }}")));
-        then(theRenderedTemplate(), is(equalTo("H")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ first('Hello') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("H")));
     }
 
     @Test
     public void mapLast() throws Exception {
-        when(jtwigRenders(template("{{ last({one: 'hello'}) }}")));
-        then(theRenderedTemplate(), is(equalTo("hello")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ last({one: 'hello'}) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("hello")));
     }
 
     @Test
     public void listLast() throws Exception {
-        when(jtwigRenders(template("{{ last([1,2]) }}")));
-        then(theRenderedTemplate(), is(equalTo("2")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ last([1,2]) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("2")));
     }
 
     @Test
     public void arrayLast() throws Exception {
-        given(aModel().withModelAttribute("array", new int[]{1,2}));
-        when(jtwigRenders(template("{{ last(array) }}")));
-        then(theRenderedTemplate(), is(equalTo("2")));
+        JtwigModelMap model = new JtwigModelMap().withModelAttribute("array", new int[]{1,2});
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ last(array) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("2")));
     }
 
     @Test
     public void stringLast() throws Exception {
-        when(jtwigRenders(template("{{ last('Hello') }}")));
-        then(theRenderedTemplate(), is(equalTo("o")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ last('Hello') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("o")));
     }
 
     @Test
     public void reserveTest() throws Exception {
-        when(jtwigRenders(template("{{ reverse('Hello') }}")));
-        then(theRenderedTemplate(), is(equalTo("olleH")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ reverse('Hello') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("olleH")));
     }
     @Test
     public void reserveListTest() throws Exception {
-        when(jtwigRenders(template("{{ reverse([1,2]) }}")));
-        then(theRenderedTemplate(), is(equalTo("[2, 1]")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ reverse([1,2]) }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("[2, 1]")));
     }
 }

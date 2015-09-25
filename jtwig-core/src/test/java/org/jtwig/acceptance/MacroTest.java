@@ -14,39 +14,32 @@
 
 package org.jtwig.acceptance;
 
-import org.jtwig.compile.CompileContext;
-import org.jtwig.configuration.JtwigConfiguration;
-import org.jtwig.parser.JtwigParser;
-import org.jtwig.resource.JtwigResource;
+import org.jtwig.Environment;
+import org.jtwig.content.model.Template;
+import org.jtwig.loader.impl.ClasspathLoader;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.jtwig.util.SyntacticSugar.then;
 
-public class MacroTest extends AbstractJtwigTest {
+public class MacroTest {
     @Test
-    public void ensureMacrosAreAddedToContext() throws Exception {
-        JtwigResource resource = templateResource("templates/acceptance/macro/macro.twig");
-        JtwigConfiguration configuration = new JtwigConfiguration();
-        JtwigParser parser = new JtwigParser(configuration.parse());
-        CompileContext ctx = new CompileContext(resource, parser, configuration.compile());
-        parser.parse(resource)
-                .compile(ctx);
-        then(ctx.macros().size(), is(equalTo(1)));
-        then(ctx.macros(resource).size(), is(equalTo(2)));
+    public void ensureMacrosAreAddedToTemplate() throws Exception {
+        Environment environment = new Environment();
+
+        Template.CompiledTemplate compile = environment.compile(new ClasspathLoader.ClasspathResource("templates/acceptance/macro/macro.twig"));
+
+        assertThat(compile.macros().size(), is(equalTo(2)));
     }
     
     @Test
     public void ensureLastMacroDefinedWithSameNameIsUsed() throws Exception {
-        JtwigResource resource = templateResource("templates/acceptance/macro/overloading.twig");
-        JtwigConfiguration configuration = new JtwigConfiguration();
-        JtwigParser parser = new JtwigParser(configuration.parse());
-        CompileContext ctx = new CompileContext(resource, parser, configuration.compile());
-        parser.parse(resource)
-                .compile(ctx);
-        then(ctx.macros().size(), is(equalTo(1)));
-        then(ctx.macros(resource).size(), is(equalTo(1)));
-        then(ctx.macros(resource).entrySet().iterator().next().getValue().arguments().size(), is(equalTo(1)));
+        Environment environment = new Environment();
+
+        Template.CompiledTemplate compile = environment.compile(new ClasspathLoader.ClasspathResource("templates/acceptance/macro/overloading.twig"));
+
+        assertThat(compile.macros().size(), is(equalTo(1)));
+        assertThat(compile.macros().entrySet().iterator().next().getValue().arguments().size(), is(equalTo(1)));
     }
 }

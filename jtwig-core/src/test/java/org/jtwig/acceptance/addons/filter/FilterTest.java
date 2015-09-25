@@ -14,110 +14,188 @@
 
 package org.jtwig.acceptance.addons.filter;
 
-import org.jtwig.acceptance.addons.AbstractAddonTest;
-import org.jtwig.exception.CompileException;
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.jtwig.exception.ParseException;
-import org.jtwig.exception.RenderException;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.jtwig.util.SyntacticSugar.after;
 
-public class FilterTest extends AbstractAddonTest {
+public class FilterTest {
     @Test(expected = ParseException.class)
-    public void emptyFilter() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter %}a{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a"));
+    public void emptyFilter() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter %}a{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a"));
     }
 
     @Test
-    public void singleFilter() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper %}a{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("A"));
+    public void singleFilter() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper %}a{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("A"));
     }
 
     @Test
-    public void singleFilterWithParam() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter format('apple') %}a is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a is for apple"));
+    public void singleFilterWithParam() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter format('apple') %}a is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a is for apple"));
     }
 
     @Test
-    public void singleFilterWithParams() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter format('a', 'apple') %}%s is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a is for apple"));
+    public void singleFilterWithParams() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter format('a', 'apple') %}%s is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a is for apple"));
     }
 
     @Test
-    public void doubleFilter() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|escape %}<a>{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("&lt;A&gt;"));
+    public void doubleFilter() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|escape %}<a>{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("&lt;A&gt;"));
     }
 
     @Test
-    public void doubleFilterWithParamFirst() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter format('apple')|upper %}a is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("A IS FOR APPLE"));
+    public void doubleFilterWithParamFirst() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter format('apple')|upper %}a is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("A IS FOR APPLE"));
     }
 
     @Test
-    public void doubleFilterWithParamSecond() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|format('apple') %}a is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("A IS FOR APPLE"));
+    public void doubleFilterWithParamSecond() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|format('apple') %}a is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("A IS FOR APPLE"));
     }
 
     @Test
-    public void doubleFilterWithParamsFirst() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter format('a', 'apple')|upper %}%s is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("A IS FOR APPLE"));
+    public void doubleFilterWithParamsFirst() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter format('a', 'apple')|upper %}%s is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("A IS FOR APPLE"));
     }
 
     @Test
-    public void doubleFilterWithParamsSecond() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|format('a', 'apple') %}%s is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("A IS FOR APPLE"));
+    public void doubleFilterWithParamsSecond() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|format('a', 'apple') %}%s is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("A IS FOR APPLE"));
     }
 
     @Test
-    public void tripleFilter() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|escape|lower %}<a>{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("&lt;a&gt;"));
+    public void tripleFilter() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|escape|lower %}<a>{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("&lt;a&gt;"));
     }
 
     @Test
-    public void tripleFilterWithParamFirst() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter format('apple')|upper|lower %}a is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a is for apple"));
+    public void tripleFilterWithParamFirst() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter format('apple')|upper|lower %}a is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a is for apple"));
     }
 
     @Test
-    public void tripleFilterWithParamSecond() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|format('apple')|lower %}a is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a is for apple"));
+    public void tripleFilterWithParamSecond() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|format('apple')|lower %}a is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a is for apple"));
     }
 
     @Test
-    public void tripleFilterWithParamThird() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|escape|format('apple') %}<%s>{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("&lt;APPLE&gt;"));
+    public void tripleFilterWithParamThird() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|escape|format('apple') %}<%s>{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("&lt;APPLE&gt;"));
     }
 
     @Test
-    public void tripleFilterWithParamsFirst() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter format('a', 'apple')|upper|lower %}%s is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a is for apple"));
+    public void tripleFilterWithParamsFirst() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter format('a', 'apple')|upper|lower %}%s is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a is for apple"));
     }
 
     @Test
-    public void tripleFilterWithParamsSecond() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|format('a', 'apple')|lower %}%s is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a is for apple"));
+    public void tripleFilterWithParamsSecond() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|format('a', 'apple')|lower %}%s is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a is for apple"));
     }
 
     @Test
-    public void tripleFilterWithParamsThird() throws ParseException, CompileException, RenderException {
-        after(jtwigRenders(template("{% filter upper|lower|format('a', 'apple') %}%s is for %s{% endfilter %}")));
-        assertThat(theRenderedTemplate(), equalTo("a is for apple"));
+    public void tripleFilterWithParamsThird() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% filter upper|lower|format('a', 'apple') %}%s is for %s{% endfilter %}")
+            .render(model);
+
+        assertThat(result, equalTo("a is for apple"));
     }
 }

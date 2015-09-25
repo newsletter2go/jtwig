@@ -14,31 +14,46 @@
 
 package org.jtwig.acceptance;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
 import org.jtwig.JtwigModelMap;
 import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-public class TernaryOperatorTest extends AbstractJtwigTest {
+public class TernaryOperatorTest {
     @Test
     public void testTrue() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ true ? 1 : 2 }}");
-        String result = template.output(new JtwigModelMap());
-        assertThat(result, is("1"));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ true ? 1 : 2 }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 
     @Test
     public void testTemplateTrue() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ value ? '1' : '2' }}");
-        String result = template.output(new JtwigModelMap().withModelAttribute("value", true));
-        assertThat(result, is("1"));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("value", true);
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ value ? '1' : '2' }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
+
     @Test
      public void testFalse() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ false ? 1 : 2 }}");
-        String result = template.output(new JtwigModelMap());
-        assertThat(result, is("2"));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ false ? 1 : 2 }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("2")));
     }
 }

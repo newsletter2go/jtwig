@@ -70,9 +70,9 @@ public class Variable extends AbstractCompilableExpression {
         public Object calculate(RenderContext context) throws CalculateException {
             Object result = context.map(name);
             if (result instanceof Undefined) {
-                if (context.configuration().strictMode())
+                if (context.environment().getConfiguration().isStrictMode())
                     throw new CalculateException(position + format(": Variable '%s' does not exist", name));
-                else if (context.configuration().logNonStrictMode())
+                else if (context.environment().getConfiguration().isLogNonStrictMode())
                     log.debug(position + format(": Variable '%s' does not exist", name));
             }
             return result;

@@ -56,6 +56,9 @@ public class MathOperations {
     }
 
     public static boolean areDouble(Object... list) {
+    	if (list == null || list.length == 0) 
+    		return false;
+    	
         for (Object obj : list)
             if (!(obj instanceof Double))
                 return false;
@@ -69,5 +72,9 @@ public class MathOperations {
                 return false;
 
         return true;
+    }
+    
+    public static boolean isNumeric(Object o) {
+        return o instanceof Number;
     }
 }

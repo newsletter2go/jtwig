@@ -1,9 +1,8 @@
 package org.jtwig.acceptance;
 
+import org.jtwig.Environment;
+import org.jtwig.configuration.JtwigConfigurationBuilder;
 import org.jtwig.mvc.JtwigViewResolver;
-import org.jtwig.resource.JtwigResource;
-import org.jtwig.resource.StringJtwigResource;
-import org.jtwig.resource.loader.JtwigResourceResolver;
 import org.junit.Before;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -16,6 +15,10 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.theme.FixedThemeResolver;
 
 import java.util.Locale;
+import org.jtwig.loader.impl.StringLoader;
+
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractViewAcceptanceTest {
     private JtwigViewResolver viewResolver;
@@ -26,7 +29,7 @@ public abstract class AbstractViewAcceptanceTest {
     public void setUp() throws Exception {
         MockServletContext servletContext = new MockServletContext();
         httpServletRequest = new MockHttpServletRequest();
-        viewResolver = new JtwigViewResolver();
+        viewResolver = new JtwigViewResolver(spy(new Environment(spy(JtwigConfigurationBuilder.newConfiguration().build()))));
 
         applicationContext = new AnnotationConfigWebApplicationContext();
         applicationContext.setServletContext(servletContext);
@@ -61,12 +64,7 @@ public abstract class AbstractViewAcceptanceTest {
 
     public String renderString (final String inlineTemplate, ModelMap modelMap) throws Exception {
         MockHttpServletResponse response = new MockHttpServletResponse();
-        viewResolver.setResourceLoader(new JtwigResourceResolver() {
-            @Override
-            public JtwigResource resolve(String viewUrl) {
-                return new StringJtwigResource(inlineTemplate);
-            }
-        });
+        when(viewResolver.getEnvironment().getConfiguration().getLoader()).thenReturn(new StringLoader(inlineTemplate));
         viewResolver.resolveViewName("", Locale.getDefault())
                 .render(modelMap, new MockHttpServletRequest(), response);
 

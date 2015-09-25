@@ -14,18 +14,22 @@
 
 package org.jtwig.acceptance.addons.spaceless;
 
-import org.jtwig.acceptance.addons.AbstractAddonTest;
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.jtwig.util.SyntacticSugar.then;
-import static org.jtwig.util.SyntacticSugar.when;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-public class SpacelessTest extends AbstractAddonTest {
+public class SpacelessTest {
     @Test
     public void testSpaceTag() throws Exception {
-        when(jtwigRenders(template("{% spaceless %}  <div>   <two>   </two>   </div>{% endspaceless %}")));
-        then(theRenderedTemplate(), is(equalTo("<div><two></two></div>")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% spaceless %}  <div>   <two>   </two>   </div>{% endspaceless %}")
+            .render(model);
+
+        assertThat(result, equalTo("<div><two></two></div>"));
     }
 }

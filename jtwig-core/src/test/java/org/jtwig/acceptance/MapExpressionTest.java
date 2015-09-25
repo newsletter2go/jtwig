@@ -14,50 +14,60 @@
 
 package org.jtwig.acceptance;
 
-import org.jtwig.JtwigModelMap;
-import org.jtwig.JtwigTemplate;
-import org.jtwig.exception.CompileException;
-import org.jtwig.exception.ParseException;
-import org.jtwig.exception.RenderException;
-import org.junit.Test;
-
-import java.util.HashMap;
-
+import java.util.Collections;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.jtwig.util.SyntacticSugar.then;
-import static org.jtwig.util.SyntacticSugar.when;
 
-public class MapExpressionTest extends AbstractJtwigTest {
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
+import org.junit.Test;
+
+public class MapExpressionTest {
     @Test
-    public void mapWithStringLiteralsAsKey () throws ParseException, CompileException, RenderException {
-        when(jtwigRenders(template("{% set a = { 'test two': 'details' } %}{{ a['test two'] }}")));
-        then(theRenderedTemplate(), is(equalTo("details")));
+    public void mapWithStringLiteralsAsKey () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% set a = { 'test two': 'details' } %}{{ a['test two'] }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("details")));
     }
 
     @Test
-    public void ifWithEmptyMapShouldBeTheSameAsFalse () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = JtwigTemplate.fromString("{% if (map) %}not empty{% else %}empty{% endif %}");
-        JtwigModelMap context = new JtwigModelMap();
-        context.withModelAttribute("map", new HashMap());
-        assertThat(template.output(context), is("empty"));
+    public void ifWithEmptyMapShouldBeTheSameAsFalse () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("map", Collections.EMPTY_MAP);
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% if (map) %}not empty{% else %}empty{% endif %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("empty")));
     }
 
     @Test
-    public void ifNoKeyInMapTryMethods () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ map.size }}");
-        JtwigModelMap context = new JtwigModelMap();
-        context.withModelAttribute("map", new HashMap());
-        assertThat(template.output(context), is("0"));
+    public void ifNoKeyInMapTryMethods () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("map", Collections.EMPTY_MAP);
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ map.size }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("0")));
     }
+
     @Test
-    public void methodsAndFieldsShouldPrevail () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ map.size }}");
-        JtwigModelMap context = new JtwigModelMap();
-        HashMap value = new HashMap();
-        value.put("size", "Hello!");
-        context.withModelAttribute("map", value);
-        assertThat(template.output(context), is("1"));
+    public void methodsAndFieldsShouldPrevail () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("map", Collections.singletonMap("size", "Hello!"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ map.size }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 }

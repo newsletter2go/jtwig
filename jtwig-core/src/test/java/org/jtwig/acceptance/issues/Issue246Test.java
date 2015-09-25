@@ -4,21 +4,30 @@ import org.jtwig.JtwigModelMap;
 import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class Issue246Test {
     @Test
     public void outputEscapedDoubleQuoteTest() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ \"\\\"\" }}");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template.output(context), is("\""));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ \"\\\"\" }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("\"")));
     }
 
     @Test
     public void outputEscapedSingleQuoteTest() throws Exception {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ '\\'' }}");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template.output(context), is("'"));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ '\\'' }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("'")));
     }
 }

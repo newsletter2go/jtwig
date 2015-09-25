@@ -16,19 +16,21 @@ package org.jtwig.acceptance;
 
 import org.jtwig.JtwigModelMap;
 import org.jtwig.JtwigTemplate;
-import org.jtwig.exception.CompileException;
-import org.jtwig.exception.ParseException;
-import org.jtwig.exception.RenderException;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 
-public class SetTest extends AbstractJtwigTest {
+public class SetTest {
     @Test
-    public void testShouldChangeTheContext() throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = JtwigTemplate.fromString("{% set a = 1 %}{{ a }}");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template.output(context), is("1"));
+    public void testShouldChangeTheContext() throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% set a = 1 %}{{ a }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1")));
     }
 }

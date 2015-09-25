@@ -14,27 +14,39 @@
 
 package org.jtwig.acceptance.issues;
 
-import org.jtwig.acceptance.AbstractJtwigTest;
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.jtwig.util.SyntacticSugar.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * 
  */
-public class Issue238Test extends AbstractJtwigTest {
+public class Issue238Test {
     @Test
     public void canConcatenateConstants() throws Exception {
-        when(jtwigRenders(template("{{ 'hello' ~ 'world' }}")));
-        then(theRenderedTemplate(), is(equalTo("helloworld")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ 'hello' ~ 'world' }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("helloworld")));
     }
+
     @Test
     public void canConcatenateVariables() throws Exception {
-        given(aModel()).withModelAttribute("a", "hello")
-                .withModelAttribute("b", "world");
-        when(jtwigRenders(template("{{ a ~ b }}")));
-        then(theRenderedTemplate(), is(equalTo("helloworld")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("a", "hello")
+            .withModelAttribute("b", "world");;
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ a ~ b }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("helloworld")));
     }
 }

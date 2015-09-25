@@ -14,25 +14,25 @@
 
 package org.jtwig.acceptance;
 
-import org.jtwig.JtwigModelMap;
-import org.jtwig.JtwigTemplate;
-import org.jtwig.configuration.JtwigConfiguration;
-import org.junit.Test;
-
-import java.util.HashMap;
-
+import java.util.Collections;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 
-public class MapSelectionTest extends AbstractJtwigTest {
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
+import org.junit.Test;
+
+public class MapSelectionTest {
     @Test
     public void testTrue() throws Exception {
-        JtwigTemplate template = new JtwigTemplate("{{ test['abc'] }}", new JtwigConfiguration());
-        JtwigModelMap context = new JtwigModelMap();
-        context.add("test", new HashMap<String, String>() {{
-            put("abc", "a");
-        }});
-        String result = template.output(context);
-        assertThat(result, is("a"));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("test", Collections.singletonMap("abc", "a"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ test['abc'] }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("a")));
     }
 }

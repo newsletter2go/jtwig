@@ -14,31 +14,36 @@
 
 package org.jtwig.acceptance;
 
-import org.jtwig.JtwigModelMap;
-import org.jtwig.JtwigTemplate;
-import org.jtwig.exception.CompileException;
-import org.jtwig.exception.ParseException;
-import org.jtwig.exception.RenderException;
-import org.junit.Test;
-
-import java.util.ArrayList;
-
+import java.util.Collections;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
+import org.junit.Test;
 
 public class OutputTest {
     @Test
-    public void shouldAllowConcatenationOfDistinctElements () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ concat ('1', list.size ,'3') }}");
-        JtwigModelMap context = new JtwigModelMap();
-        context.withModelAttribute("list", new ArrayList<Object>());
-        assertThat(template.output(context), is("103"));
+    public void shouldAllowConcatenationOfDistinctElements () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("list", Collections.EMPTY_LIST);
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ concat ('1', list.size ,'3') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("103")));
     }
 
     @Test
-    public void shouldAllowFilters () throws ParseException, CompileException, RenderException {
-        JtwigTemplate template = JtwigTemplate.fromString("{{ ['1', '2' ,'3'] | join(',') }}");
-        JtwigModelMap context = new JtwigModelMap();
-        assertThat(template.output(context), is("1,2,3"));
+    public void shouldAllowFilters () throws Exception {
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ ['1', '2' ,'3'] | join(',') }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("1,2,3")));
     }
 }

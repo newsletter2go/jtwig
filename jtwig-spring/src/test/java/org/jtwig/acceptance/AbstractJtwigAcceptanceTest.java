@@ -22,6 +22,10 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
+import org.jtwig.Environment;
+import org.jtwig.configuration.JtwigConfigurationBuilder;
+import org.jtwig.functions.SpringFunctions;
+import org.jtwig.loader.impl.ClasspathLoader;
 import org.jtwig.mvc.JtwigViewResolver;
 import org.junit.After;
 import org.junit.Before;
@@ -45,14 +49,14 @@ public abstract class AbstractJtwigAcceptanceTest {
 
     private GetMethod getResult;
     private void startServer () throws Exception {
-        jetty = new Server(0);
+        jetty = new Server(9090);
 
-        final AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
+        AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
         applicationContext.register(ConfigClass.class, getClass());
         applicationContext.register(configurationClasses());
 
-        final ServletHolder servletHolder = new ServletHolder(new DispatcherServlet(applicationContext));
-        final ServletContextHandler context = new ServletContextHandler();
+        ServletHolder servletHolder = new ServletHolder(new DispatcherServlet(applicationContext));
+        ServletContextHandler context = new ServletContextHandler();
 
         context.setErrorHandler(null); // use Spring exception handler(s)
         context.setContextPath("/");
@@ -114,12 +118,29 @@ public abstract class AbstractJtwigAcceptanceTest {
 
         @Bean
         public ViewResolver viewResolver () {
-            JtwigViewResolver jtwigViewResolver = new JtwigViewResolver();
+            JtwigViewResolver jtwigViewResolver = new JtwigViewResolver(environment());
             jtwigViewResolver.setPrefix("/WEB-INF/views/");
             jtwigViewResolver.setSuffix(".twig.html");
             jtwigViewResolver.setThemeResolver(themeResolver());
             jtwigViewResolver.setUseThemeInViewPath(true);
             return jtwigViewResolver;
+        }
+        
+        @Bean
+        public Environment environment (/*ServletContext ctx*/) {
+            ClasspathLoader classpath = new ClasspathLoader();
+//            ChainLoader chainLoader = new ChainLoader(Arrays.asList(web, classpath));
+            
+            Environment env = new Environment(JtwigConfigurationBuilder.newConfiguration()
+                                                  .withLoader(classpath)
+                                                  .build());
+            env.getConfiguration().getFunctionRepository().include(springFunctions());
+            return env;
+        }
+        
+        @Bean
+        public SpringFunctions springFunctions () {
+            return new SpringFunctions();
         }
     }
 

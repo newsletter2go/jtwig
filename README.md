@@ -16,3 +16,11 @@
 **Changes**: [CHANGELOG.md](CHANGELOG.md)
 
 **License**: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+### Snapshot Releasing
+
+Jtwig uses [bintray](http://bintray.com) for snapshot releasing.
+
+**How to include in your project?**
+
+[Check here](http://jmelo.lyncode.com/jtwig-snapshot-repository/)

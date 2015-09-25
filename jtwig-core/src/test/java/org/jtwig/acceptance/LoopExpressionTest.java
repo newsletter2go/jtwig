@@ -14,38 +14,62 @@
 
 package org.jtwig.acceptance;
 
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
 import java.util.HashMap;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.jtwig.util.SyntacticSugar.*;
 
-public class LoopExpressionTest extends AbstractJtwigTest {
+public class LoopExpressionTest {
     @Test
     public void simpleLoop() throws Exception {
-        given(aModel().withModelAttribute("list", asList("a", "b", "c")));
-        when(jtwigRenders(template("{% for item in list %}{{ item }}{% endfor %}")));
-        then(theRenderedTemplate(), is(equalTo("abc")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("list", asList("a", "b", "c"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% for item in list %}{{ item }}{% endfor %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("abc")));
     }
     @Test
     public void simpleLoopLength() throws Exception {
-        given(aModel().withModelAttribute("list", asList("a", "b", "c")));
-        when(jtwigRenders(template("{% for item in list %}{{ loop.length }}{% endfor %}")));
-        then(theRenderedTemplate(), is(equalTo("333")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("list", asList("a", "b", "c"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% for item in list %}{{ loop.length }}{% endfor %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("333")));
     }
+
     @Test
     public void simpleMapLoopWithList() throws Exception {
-        given(aModel().withModelAttribute("list", asList("a")));
-        when(jtwigRenders(template("{% for key, value in list %}{{ key }} - {{ value }}{% endfor %}")));
-        then(theRenderedTemplate(), is(equalTo("0 - a")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("list", asList("a"));
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% for key, value in list %}{{ key }} - {{ value }}{% endfor %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("0 - a")));
     }
+
     @Test
     public void emptyMap() throws Exception {
-        given(aModel().withModelAttribute("list", new HashMap<>()));
-        when(jtwigRenders(template("{% for key, value in list %}{{ key }} - {{ value }}{% else %}Test{% endfor %}")));
-        then(theRenderedTemplate(), is(equalTo("Test")));
+        JtwigModelMap model = new JtwigModelMap();
+        model.withModelAttribute("list", new HashMap<>());
+
+        String result = JtwigTemplate
+            .inlineTemplate("{% for key, value in list %}{{ key }} - {{ value }}{% else %}Test{% endfor %}")
+            .render(model);
+
+        assertThat(result, is(equalTo("Test")));
     }
 }

@@ -14,23 +14,33 @@
 
 package org.jtwig.acceptance.issues;
 
-import org.jtwig.acceptance.AbstractJtwigTest;
+import org.jtwig.JtwigModelMap;
+import org.jtwig.JtwigTemplate;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.jtwig.util.SyntacticSugar.then;
-import static org.jtwig.util.SyntacticSugar.when;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-public class Issue97Test extends AbstractJtwigTest {
+public class Issue97Test {
     @Test
     public void testDecimalResult() throws Exception {
-        when(jtwigRenders(template("{{ 1 / 10 }}")));
-        then(theRenderedTemplate(), is(equalTo("0.1")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ 1 / 10 }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("0.1")));
     }
     @Test
     public void testIntegerDivision() throws Exception {
-        when(jtwigRenders(template("{{ 1 // 10 }}")));
-        then(theRenderedTemplate(), is(equalTo("0")));
+        JtwigModelMap model = new JtwigModelMap();
+
+        String result = JtwigTemplate
+            .inlineTemplate("{{ 1 // 10 }}")
+            .render(model);
+
+        assertThat(result, is(equalTo("0")));
     }
 }
